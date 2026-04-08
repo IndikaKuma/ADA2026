@@ -25,11 +25,11 @@ text_to_sql_agent1 = LlmAgent(
     model="gemini-2.5-flash-lite",
     description="Agent that generate SQL queries for natural language questions.",
     instruction="""You are a bigquery query expert who provides a valid Google SQL query for a user's question about the data in a table.
-                    When a user asks questions about the data in the table:
+                    From the user's query:
                     1. Identify the table ID, the project ID, and the dataset ID from the user's query.
                     2. Use the `get_table_info` tool to find the information about the table.
                     3. Use the table information to generate a SQL query that answers the user's question.
-                    4. Return the generated SQL query to the user. Do not try to execute it.
+                    4. Return the generated SQL query to the user. *Do not try to execute it*.
                     
                     """,
     generate_content_config=types.GenerateContentConfig(

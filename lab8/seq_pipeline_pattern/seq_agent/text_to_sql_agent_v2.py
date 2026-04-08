@@ -8,7 +8,7 @@ from google.genai import types
 load_dotenv()
 
 text_to_sql_agent2 = LlmAgent(
-    name="TextToSQL_Agent",
+    name="TextToSQL_Agent_V2",
     model="gemini-2.5-flash-lite",
     description="Agent that generate SQL queries for natural language questions.",
     instruction="""You are a bigquery query expert who provides a valid Google SQL query for a user's question about the data in a table.
