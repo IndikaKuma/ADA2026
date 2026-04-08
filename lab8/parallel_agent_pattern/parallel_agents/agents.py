@@ -1,6 +1,8 @@
-from google.adk.tools import google_search
+from google.adk.tools import google_search, ToolContext, LongRunningFunctionTool
 from google.adk.agents import Agent, ParallelAgent, SequentialAgent
 from dotenv import load_dotenv
+from typing import Any
+from google.genai import types
 
 load_dotenv()
 # Content Credit https://codelabs.developers.google.com/adkcourse/instructions#3
@@ -30,9 +32,8 @@ restaurant_finder_agent = Agent(
     When you recommend a place, you must output *only* the name of the establishment.
     For example, if the best sushi is at 'Jin Sho', you should output only: Jin Sho
     """,
-    output_key="restaurant_result" # Set the correct output key for this workflow
+    output_key="restaurant_result"  # Set the correct output key for this workflow
 )
-
 
 #  The ParallelAgent runs all three specialists at once
 parallel_research_agent = ParallelAgent(
@@ -47,10 +48,12 @@ synthesis_agent = Agent(
     - Museum: {museum_result}
     - Concert: {concert_result}
     - Restaurant: {restaurant_result}
-    """
+    """,
+    output_key="synthesis_result"
 )
 
-# The SequentialAgent runs the parallel search, then the synthesis
+
+# # The SequentialAgent runs the parallel search, then the synthesis
 parallel_planner_agent = SequentialAgent(
     name="parallel_planner_agent",
     sub_agents=[parallel_research_agent, synthesis_agent],
@@ -58,3 +61,47 @@ parallel_planner_agent = SequentialAgent(
 )
 
 root_agent = parallel_planner_agent
+
+# ******** Human-in-the-loop Demo ****************
+# def confirm_recommendation(museum: str, concert: str, restaurant: str) -> dict[str, str]:
+#     """Confirm the recommendation."""
+#     print(f"Confirm recommendation for {museum} and {concert}.")
+#     return {
+#         'status': 'Recommended',
+#     }
+#
+#
+# def ask_for_approval(
+#         museum: str, concert: str, restaurant: str, tool_context: ToolContext
+# ) -> dict[str, Any]:
+#     """Ask for approval for the travel selection."""
+#     return {
+#         'status': 'pending',
+#         'museum': museum,
+#         'concert': concert,
+#         'restaurant': restaurant,
+#         'ticketId': 'travel-ticket-001',
+#     }
+#
+#
+# selection_agent = Agent(
+#     model='gemini-2.5-flash',
+#     name='selection_agent',
+#     instruction="""
+#       You are an agent whose job is to recommend museum, concert, and restaurant to the travel manager.
+#       Select a single museum, a single concert, and a single restaurant from {synthesis_result} and ask for approval
+#       from the travel manager. If the manager approves, you will
+#       call confirm_recommendation() to recommend the selection to the user. If the manager
+#       rejects, you will inform the user of the rejection.
+# """,
+#     tools=[confirm_recommendation, LongRunningFunctionTool(func=ask_for_approval)],
+#     generate_content_config=types.GenerateContentConfig(temperature=0.1),
+# )
+#
+# parallel_planner_agent2 = SequentialAgent(
+#     name="parallel_planner_agent",
+#     sub_agents=[parallel_research_agent, synthesis_agent, selection_agent],
+#     description="A workflow that finds multiple things in parallel and then summarizes the results."
+# )
+#
+# root_agent = parallel_planner_agent2
